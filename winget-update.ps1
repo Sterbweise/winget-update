@@ -11,7 +11,7 @@
     File Name      : winget-update.ps1
     Author         : sterbweise
     Prerequisite   : PowerShell 5.1 or later, Windows Package Manager (winget)
-    Version        : 1.5
+    Version        : v1.0.0
     Date           : 2024-08-20
 
      _    _ _                  _     _   _           _       _       
@@ -114,7 +114,7 @@ EXAMPLES
 
 NOTES
     Author  : sterbweise
-    Version : 1.5
+    Version : v1.0.0
     Date    : 2024-08-20
 
     This script is designed for both casual users and system administrators,

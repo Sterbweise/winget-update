@@ -145,4 +145,4 @@ This project is licensed under the MIT Licence. See the [LICENCE](LICENCE) file 
 
 ---
 
-Developed with ❤️ by [sterbweise](https://github.com/sterbweise)
+Developed with ❤️ by [Sterbweise](https://github.com/sterbweise)

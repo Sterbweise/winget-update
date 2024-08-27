@@ -184,32 +184,59 @@ $CurrentPermanentExcludeApps = Get-PermanentExcludeList
 # Function to get the list of available updates from winget
 function Get-WingetUpdates {
     # Execute winget update command and capture the output
-    $wingetOutput = winget update | Out-String
+    $wingetOutput = winget update --include-unknown | Out-String
     $lines = $wingetOutput -split "`r`n"
     
-    # Locate the header line in the output
-    $headerLine = $lines | Where-Object { $_ -match "Name\s+Id\s+Version\s+Available\s+Source" }
+    $appIds = @()
+    $headerFound = $false
+    $headerLine = ""
+    
+    foreach ($line in $lines) {
+        if ($line -match "Name\s+Id\s+Version\s+Available\s+Source") {
+            $headerFound = $true
+            $headerLine = $line
+            continue
+        }
 
-    if ($headerLine) {
-        # Calculate the index positions for parsing the output
-        $idIndex = $headerLine.IndexOf("Id")
-        $versionIndex = $headerLine.IndexOf("Version") - 1
+        if ($headerFound -and $line -match "^\s*\S+" -and $line -match "\S" -and $line -match "[a-zA-Z0-9]") {
+            # Calculate the index positions for parsing the output
+            $nameIndex = $headerLine.IndexOf("Name")
+            $idIndex = $headerLine.IndexOf("Id")
+            $versionIndex = $headerLine.IndexOf("Version")
+            $availableIndex = $headerLine.IndexOf("Available")
+            $sourceIndex = $headerLine.IndexOf("Source")
 
-        $appIds = @()
-        foreach ($line in $lines) {
-            # Parse each line to extract the application ID
-            if ($line -match "^\s*\S+" -and $line -notmatch "Name\s+Id\s+Version\s+Available\s+Source" -and $line.Length -ge $headerLine.Length) {
-                if ($line -match "[a-zA-Z0-9]") {
-                    $appId = $line.Substring($idIndex, $versionIndex - $idIndex).Trim()
-                    $appIds += $appId
+            # Extract the ID based on the header positions
+            if ($line.Length -ge $idIndex) {
+                $idEnd = if ($versionIndex -gt $idIndex) { $versionIndex } else { $line.Length }
+                $appId = $line.Substring($idIndex, $idEnd - $idIndex).Trim()
+
+                $nameEnd = if ($idIndex -gt $nameIndex) { $idIndex } else { $line.Length }
+                $appName = $line.Substring($nameIndex, $nameEnd - $nameIndex).Trim()
+
+                $versionEnd = if ($availableIndex -gt $versionIndex) { $availableIndex } else { $line.Length }
+                $appVersion = $line.Substring($versionIndex, $versionEnd - $versionIndex).Trim()
+
+                $availableEnd = if ($sourceIndex -gt $availableIndex) { $sourceIndex } else { $line.Length }
+                $appAvailable = $line.Substring($availableIndex, $availableEnd - $availableIndex).Trim()
+
+                $sourceEnd = $line.Length
+                $appSource = $line.Substring($sourceIndex, $sourceEnd - $sourceIndex).Trim()
+                if ($appId -and $appId -ne "Id") {
+                    $wingetShowOutput = winget show --id $appId | Out-String
+                    if ($wingetShowOutput -notmatch "No package found matching input criteria") {
+                        $appIds += $appId
+                    }
                 }
             }
         }
-        return $appIds
-    } else {
-        Write-Host "Unable to find the header line in winget update output."
-        return @()
     }
+
+    if ($appIds.Count -eq 0) {
+        Write-Host "No updates found or unable to parse winget output."
+    }
+
+    return $appIds
 }
 
 # Function to update applications
@@ -221,30 +248,31 @@ function Update-Apps {
     )
 
     # Define the base winget command
-    $baseCommand = "winget upgrade --id"
+    $baseCommand = "winget"
 
     # Set additional parameters based on the selected mode
     switch ($Mode) {
-        "normal" { $additionalParams = "" }
-        "silent" { $additionalParams = "--silent --accept-package-agreements" }
-        "force" { $additionalParams = "--force --accept-package-agreements --accept-source-agreements --ignore-local-archive-malware-scan" }
-        "verbose" { $additionalParams = "--verbose-logs" }
-        "no-interaction" { $additionalParams = "--disable-interactivity --silent --accept-package-agreements --accept-source-agreements" }
-        "full-upgrade" { $additionalParams = "--include-unknown --include-pinned --accept-package-agreements --accept-source-agreements" }
-        "safe-upgrade" { $additionalParams = "--accept-package-agreements" }
-        default { $additionalParams = "" }
+        "normal" { $additionalParams = @() }
+        "silent" { $additionalParams = @("--silent", "--accept-package-agreements") }
+        "force" { $additionalParams = @("--force", "--accept-package-agreements", "--accept-source-agreements", "--ignore-local-archive-malware-scan") }
+        "verbose" { $additionalParams = @("--verbose-logs") }
+        "no-interaction" { $additionalParams = @("--disable-interactivity", "--silent", "--accept-package-agreements", "--accept-source-agreements") }
+        "full-upgrade" { $additionalParams = @("--include-unknown", "--include-pinned", "--accept-package-agreements", "--accept-source-agreements") }
+        "safe-upgrade" { $additionalParams = @("--accept-package-agreements") }
+        default { $additionalParams = @() }
     }
 
     # Append custom parameters if provided
     if ($CustomParams) {
-        $additionalParams += " $CustomParams"
+        $additionalParams += $CustomParams -split ' '
     }
 
     # Iterate through each application ID and perform the update
     foreach ($appId in $AppIds) {
         if (($ExcludeApps -notcontains $appId) -and ($CurrentPermanentExcludeApps -notcontains $appId)) {
             Write-Host "Updating application with ID: $appId (Mode: $Mode)"
-            Invoke-Expression "$baseCommand $appId $additionalParams"
+            $arguments = @("upgrade", "--id", $appId) + $additionalParams
+            & $baseCommand $arguments
         } else {
             Write-Host "Application excluded from update: $appId"
         }
@@ -256,7 +284,7 @@ $appIdsToUpdate = Get-WingetUpdates
 
 if ($appIdsToUpdate.Count -gt 0) {
     # Display winget version information
-    winget update
+    winget update --include-unknown
     Write-Host "`n"
     Write-Host "Update mode: $Mode"
     Write-Host "Temporarily excluded applications: $($ExcludeApps -join ', ')"

@@ -10,7 +10,7 @@
 
 An advanced PowerShell script to automate application updates via winget.
 
-<img src="https://github.com/user-attachments/assets/d04644d4-9497-41cf-ad28-f097f64d334a" alt="image" width="600"/>
+<img src="https://github.com/user-attachments/assets/5863fdf3-6cd8-47d8-b346-4a574fc45c61" alt="image" width="600"/>
 
 ## Table of Contents
 

@@ -429,7 +429,7 @@ function Show-UpdateSummary {
         Write-Host " → " -NoNewline
         Write-Host ($parts[1].Trim() + " ").PadRight($width - 32) -ForegroundColor $toolVersionColors[1] -NoNewline
     } else {
-        Write-Host ($toolVersionStatus + " ").PadRight($width - 32) -ForegroundColor $toolVersionColors[0] -NoNewline
+        Write-Host ($toolVersionStatus + " ").PadRight($width - 23) -ForegroundColor $toolVersionColors[0] -NoNewline
     }
     Write-Host "│" -ForegroundColor Blue
 

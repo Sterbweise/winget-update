@@ -1,0 +1,4 @@
+logs/
+persistent_exclude_apps.txt
+winget-update.log
+winget_update_*.log

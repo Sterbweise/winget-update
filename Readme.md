@@ -24,7 +24,7 @@ An advanced PowerShell script to automate application updates via winget.
   - [Examples](#examples)
     - [Standard Update](#standard-update)
     - [Silent Update Excluding Certain Applications](#silent-update-excluding-certain-applications)
-    - [Adding Applications to the Permanent Exclusion List](#adding-applications-to-the-permanent-exclusion-list)
+    - [Adding Applications to the Persistent Exclusion List](#adding-applications-to-the-persistent-exclusion-list)
     - [Forced Update with Custom Parameters](#forced-update-with-custom-parameters)
   - [Contributing](#contributing)
   - [Licence](#licence)
@@ -37,7 +37,7 @@ Winget-Update is a PowerShell script designed to simplify and automate the proce
 
 - Automatic application updates via winget
 - Multiple update modes (normal, silent, forced, etc.)
-- Temporary or permanent application exclusion
+- Temporary or persistent application exclusion
 - Support for custom parameters for winget
 - User-friendly command-line interface
 
@@ -50,12 +50,14 @@ Winget-Update is a PowerShell script designed to simplify and automate the proce
 ## Installation
 
 1. Ensure winget is installed on your system.
+
    - To check, open PowerShell and type `winget --version`
    - If winget is not recognised, install it from the [Microsoft Store](https://www.microsoft.com/p/app-installer/9nblggh4nns1)
 
 2. Obtain the `winget-update.ps1` script:
-   
+
    Option A: Clone the Git repository (recommended)
+
    - Open PowerShell
    - Navigate to the folder where you want to clone the repository
    - Run the command:
@@ -64,6 +66,7 @@ Winget-Update is a PowerShell script designed to simplify and automate the proce
      ```
 
    Option B: Download the script directly
+
    - Visit [https://github.com/sterbweise/winget-update](https://github.com/sterbweise/winget-update)
    - Click on the `winget-update.ps1` file
    - Click on the "Raw" button
@@ -71,6 +74,7 @@ Winget-Update is a PowerShell script designed to simplify and automate the proce
    - Choose the save location and click "Save"
 
 3. Add the folder containing the script to your PATH environment variable:
+
    - Open PowerShell as administrator
    - Run the following command, replacing `C:\Path\To\The\Folder` with the actual path to the folder containing the script:
      ```powershell
@@ -100,8 +104,8 @@ powershell
 
 - `-ExcludeApps` or `-e`: Specifies applications to exclude from the current update.
 - `-Mode` or `-m`: Sets the update mode.
-- `-AddPermanentExcludeApps` or `-ape`: Adds applications to the permanent exclusion list.
-- `-RemovePermanentExcludeApps` or `-rpe`: Removes applications from the permanent exclusion list.
+- `-AddPersistentExcludeApps` or `-ape`: Adds applications to the persistent exclusion list.
+- `-RemovePersistentExcludeApps` or `-rpe`: Removes applications from the persistent exclusion list.
 - `-CustomParams` or `-cp`: Specifies custom parameters to pass directly to winget.
 - `-Help`: Displays detailed help for the script.
 
@@ -118,15 +122,19 @@ powershell
 ## Examples
 
 ### Standard Update
+
     .\winget-update.ps1
 
 ### Silent Update Excluding Certain Applications
+
     .\winget-update.ps1 -ExcludeApps "App1,App2" -Mode silent
 
-### Adding Applications to the Permanent Exclusion List
-    .\winget-update.ps1 -AddPermanentExcludeApps "App3,App4"
+### Adding Applications to the Persistent Exclusion List
+
+    .\winget-update.ps1 -AddPersistentExcludeApps "App3,App4"
 
 ### Forced Update with Custom Parameters
+
     .\winget-update.ps1 -Mode force -CustomParams "--no-upgrade"
 
 ## Contributing

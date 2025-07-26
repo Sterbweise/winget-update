@@ -1,158 +1,484 @@
-# Winget Update Tools
+<div align="center">
 
-![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?logo=gnometerminal&logoColor=white)
-![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/sterbweise/winget-update)
-![GitHub last commit](https://img.shields.io/github/last-commit/sterbweise/winget-update)
-![GitHub issues](https://img.shields.io/github/issues/sterbweise/winget-update)
-![GitHub stars](https://img.shields.io/github/stars/sterbweise/winget-update)
-![GitHub licence](https://img.shields.io/github/license/sterbweise/winget-update)
+# Winget Update Manager
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square&logo=powershell&logoColor=white&labelColor=2C3E50)
+![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D4?style=flat-square&logo=windows&logoColor=white&labelColor=34495E)
+![License](https://img.shields.io/badge/License-MIT-50C878?style=flat-square&logo=opensourceinitiative&logoColor=white&labelColor=2C3E50)
+![Version](https://img.shields.io/badge/Version-3.0.0-FF6B6B?style=flat-square&logoColor=white&labelColor=34495E)
+![GitHub Stars](https://img.shields.io/github/stars/sterbweise/winget-update?style=flat-square&logo=github&color=FFD700&labelColor=2C3E50)
+![GitHub Issues](https://img.shields.io/github/issues/sterbweise/winget-update?style=flat-square&logo=github&color=FF4757&labelColor=34495E)
+![Last Commit](https://img.shields.io/github/last-commit/sterbweise/winget-update?style=flat-square&logo=git&color=2ED573&labelColor=34495E)
+![Repo Size](https://img.shields.io/github/repo-size/sterbweise/winget-update?style=flat-square&logo=database&color=FFA726&labelColor=2C3E50)
 
-An advanced PowerShell script to automate application updates via winget.
+</div>
 
-<img src="https://github.com/user-attachments/assets/d04644d4-9497-41cf-ad28-f097f64d334a" alt="image" width="600"/>
+
+## Summary
+
+**Winget Update Manager** is a comprehensive PowerShell automation tool designed for Windows system administrators and power users. It provides intelligent application lifecycle management using Windows Package Manager (winget) with advanced features including smart application detection, persistent exclusion management, and comprehensive logging capabilities.
+
+
+<table align="center">
+<tr>
+<td align="center">🎯<br><b>Smart Detection</b><br>Intelligent app matching</td>
+<td align="center">⚡<br><b>Multiple Modes</b><br>8 execution modes</td>
+<td align="center">🛡️<br><b>Usage Ready</b><br>Advanced logging</td>
+<td align="center">🔧<br><b>Easy Setup</b><br>One-line installation</td>
+</tr>
+</table>
+
+
+
+## Quick Installation
+
+### One-Line Installation
+
+```powershell
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/sterbweise/winget-update/main/install.ps1'))
+```
+
+*After installation, use `winget-update` from anywhere in PowerShell*
+
+
 
 ## Table of Contents
 
-- [Winget Update Tools](#winget-update-tools)
-  - [Table of Contents](#table-of-contents)
-  - [About](#about)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [Main Options](#main-options)
-  - [Update Modes](#update-modes)
-  - [Examples](#examples)
-    - [Standard Update](#standard-update)
-    - [Silent Update Excluding Certain Applications](#silent-update-excluding-certain-applications)
-    - [Adding Applications to the Persistent Exclusion List](#adding-applications-to-the-persistent-exclusion-list)
-    - [Forced Update with Custom Parameters](#forced-update-with-custom-parameters)
-  - [Contributing](#contributing)
-  - [Licence](#licence)
+<div align="center">
 
-## About
+| [🔧 Installation](#installation) | [⚙️ System Requirements](#system-requirements) | [🎮 Quick Start](#quick-start) |
+|:---:|:---:|:---:|
+| [📚 Usage Guide](#usage) | [🔧 Configuration](#configuration) | [🚀 Advanced Features](#advanced-features) |
+| [🛠️ Troubleshooting](#troubleshooting) | [🤝 Contributing](#contributing) | [📄 License](#license) |
 
-Winget-Update is a PowerShell script designed to simplify and automate the process of updating applications via the Windows Package Manager (winget). It offers increased flexibility and advanced features for users and system administrators.
-
-## Features
-
-- Automatic application updates via winget
-- Multiple update modes (normal, silent, forced, etc.)
-- Temporary or persistent application exclusion
-- Support for custom parameters for winget
-- User-friendly command-line interface
-
-## Prerequisites
-
-- Windows 10 (version 1809 or later) or Windows 11
-- PowerShell 5.1 or later
-- [Windows Package Manager (winget)](https://github.com/microsoft/winget-cli)
-
-## Installation
-
-1. Ensure winget is installed on your system.
-
-   - To check, open PowerShell and type `winget --version`
-   - If winget is not recognised, install it from the [Microsoft Store](https://www.microsoft.com/p/app-installer/9nblggh4nns1)
-
-2. Obtain the `winget-update.ps1` script:
-
-   Option A: Clone the Git repository (recommended)
-
-   - Open PowerShell
-   - Navigate to the folder where you want to clone the repository
-   - Run the command:
-     ```
-     git clone https://github.com/sterbweise/winget-update.git
-     ```
-
-   Option B: Download the script directly
-
-   - Visit [https://github.com/sterbweise/winget-update](https://github.com/sterbweise/winget-update)
-   - Click on the `winget-update.ps1` file
-   - Click on the "Raw" button
-   - Right-click and select "Save as..."
-   - Choose the save location and click "Save"
-
-3. Add the folder containing the script to your PATH environment variable:
-
-   - Open PowerShell as administrator
-   - Run the following command, replacing `C:\Path\To\The\Folder` with the actual path to the folder containing the script:
-     ```powershell
-     [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Path\To\The\Folder", "Machine")
-     ```
-   - Close and reopen PowerShell for the changes to take effect
-
-4. Create a PowerShell alias for the script:
-   - Open your PowerShell profile by typing `notepad $PROFILE` in PowerShell
-   - If the file doesn't exist, create it
-   - Add the following line to the file:
-     ```powershell
-     Set-Alias -Name winget-update -Value winget-update.ps1
-     ```
-   - Save and close the file
-   - Reload your PowerShell profile by typing `. $PROFILE`
-
-You can now run `winget-update` from any location in PowerShell.
-
-## Usage
-
-Open PowerShell and navigate to the directory containing the script. Run it with the desired parameters:
-powershell
-.\winget-update.ps1 [options]
-
-### Main Options
-
-- `-ExcludeApps` or `-e`: Specifies applications to exclude from the current update.
-- `-Mode` or `-m`: Sets the update mode.
-- `-AddPersistentExcludeApps` or `-ape`: Adds applications to the persistent exclusion list.
-- `-RemovePersistentExcludeApps` or `-rpe`: Removes applications from the persistent exclusion list.
-- `-CustomParams` or `-cp`: Specifies custom parameters to pass directly to winget.
-- `-Help`: Displays detailed help for the script.
-
-## Update Modes
-
-- `normal`: Default mode, interactive update.
-- `silent`: Silent mode, automatically accepts all agreements.
-- `force`: Forced mode, ignores version checks and bypasses some restrictions.
-- `verbose`: Provides detailed logging information.
-- `no-interaction`: Runs without user interaction, suitable for automated scripts.
-- `full-upgrade`: Includes unknown versions and pinned packages in the upgrade.
-- `safe-upgrade`: Performs a conservative upgrade, accepting only package agreements.
-
-## Examples
-
-### Standard Update
-
-    .\winget-update.ps1
-
-### Silent Update Excluding Certain Applications
-
-    .\winget-update.ps1 -ExcludeApps "App1,App2" -Mode silent
-
-### Adding Applications to the Persistent Exclusion List
-
-    .\winget-update.ps1 -AddPersistentExcludeApps "App3,App4"
-
-### Forced Update with Custom Parameters
-
-    .\winget-update.ps1 -Mode force -CustomParams "--no-upgrade"
-
-## Contributing
-
-Contributions are welcome! Feel free to open an issue or submit a pull request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## Licence
-
-This project is licensed under the MIT Licence. See the [LICENCE](LICENCE) file for details.
+</div>
 
 ---
 
-Developed with ❤️ by [Sterbweise](https://github.com/sterbweise)
+## 🔧 Installation
+
+<details>
+<summary><b>📦 One-Line Installation (Recommended)</b></summary>
+
+```powershell
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/sterbweise/winget-update/main/install.ps1'))
+```
+
+**What this does:**
+- ✅ Downloads and installs the latest version
+- ✅ Creates a global `winget-update` command
+- ✅ Sets up the necessary directory structure
+- ✅ Configures PowerShell profile integration
+
+</details>
+
+<details>
+<summary><b>📥 Manual Installation</b></summary>
+
+```powershell
+# Download the script
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/sterbweise/winget-update/main/winget-update.ps1" -OutFile "winget-update.ps1"
+
+# Set execution policy
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Run the script
+.\winget-update.ps1
+```
+
+</details>
+
+<details>
+<summary><b>🔄 Git Installation</b></summary>
+
+```powershell
+git clone https://github.com/sterbweise/winget-update.git
+cd winget-update
+.\winget-update.ps1 -Help
+```
+
+</details>
+
+
+## ⚙️ System Requirements
+
+<div align="center">
+
+| Component | Requirement | Status |
+|:---:|:---:|:---:|
+| **🖥️ OS** | Windows 10 (1809+) / Windows 11 | ![Required](https://img.shields.io/badge/-Required-red?style=flat-square) |
+| **⚡ PowerShell** | 5.1 / 7.0+ | ![Required](https://img.shields.io/badge/-Required-red?style=flat-square) |
+| **📦 Winget** | 1.0+ | ![Required](https://img.shields.io/badge/-Required-red?style=flat-square) |
+| **🔐 Privileges** | Administrator | ![Auto](https://img.shields.io/badge/-Auto--Prompt-yellow?style=flat-square) |
+| **💾 Memory** | 512 MB RAM | ![Minimal](https://img.shields.io/badge/-Minimal-blue?style=flat-square) |
+| **💿 Storage** | 100 MB | ![Minimal](https://img.shields.io/badge/-Minimal-blue?style=flat-square) |
+
+</div>
+
+## 🎮 Quick Start
+
+### Basic Usage
+
+<table>
+<tr>
+<td width="50%">
+
+**🔄 Standard Update**
+```powershell
+winget-update
+```
+*Interactive mode with modern interface and real-time progress*
+
+**👀 Preview Mode**
+```powershell
+winget-update -Mode dry-run
+```
+*See what would be updated without making changes*
+
+</td>
+<td width="50%">
+
+**🤫 Silent Mode**
+```powershell
+winget-update -Mode silent
+```
+*Automated execution for scripts and scheduled tasks*
+
+**🚀 Full Upgrade**
+```powershell
+winget-update -Mode full-upgrade
+```
+*Updates all packages including unknown versions*
+
+</td>
+</tr>
+</table>
+
+
+## 📚 Usage
+
+### Execution Modes
+
+<div align="center">
+
+| Mode | Description | Use Case | Icon |
+|:---:|:---|:---|:---:|
+| `normal` | Interactive with prompts | Desktop environments | 🖥️ |
+| `silent` | Automated execution | Scheduled tasks | 🤫 |
+| `dry-run` | Simulation mode | Testing & planning | 👀 |
+| `force` | Bypass restrictions | Emergency updates | ⚡ |
+| `verbose` | Detailed logging | Debugging | 📝 |
+| `no-interaction` | Zero user input | Server environments | 🤖 |
+| `full-upgrade` | Include all packages | Complete refresh | 🚀 |
+| `safe-upgrade` | Conservative approach | Production systems | 🛡️ |
+
+</div>
+
+### 🎯 Smart Exclusion Management
+
+<details>
+<summary><b>Temporary Exclusions</b></summary>
+
+```powershell
+# Exclude apps from current session only
+winget-update -ExcludeApps "Microsoft.Edge,Discord.Discord"
+```
+- ✅ Supports both friendly names and exact IDs
+- ✅ Use comma separation for multiple applications
+- ✅ Only affects current update session
+
+</details>
+
+<details>
+<summary><b>Permanent Exclusions</b></summary>
+
+```powershell
+# Smart addition to permanent exclusion list
+winget-update -AddPersistentExcludeApps "Visual Studio Code,Chrome,Spotify"
+
+# Smart removal from permanent exclusion list
+winget-update -RemovePersistentExcludeApps "Discord,Spotify"
+```
+- 🧠 Intelligent name matching
+- 🔍 Shows suggestions for ambiguous matches
+- 💾 Automatically saves to `persistent_exclude_apps.txt`
+
+</details>
+
+### ⚙️ Advanced Parameters
+
+<details>
+<summary><b>Custom Parameters</b></summary>
+
+```powershell
+# Pass custom parameters to winget
+winget-update -CustomParams "--include-unknown --force"
+
+# Production automation example
+winget-update -Mode silent -ExcludeApps "Microsoft.VisualStudio.2022.Community" -CustomParams "--accept-source-agreements"
+
+# Maximum logging for debugging
+winget-update -Mode verbose -CustomParams "--include-unknown --verbose-logs"
+```
+
+</details>
+
+
+## 🔧 Configuration
+
+### 📁 File Structure
+
+```
+📦 winget-update/
+├── 📜 winget-update.ps1              # Main executable script
+├── 📜 install.ps1                    # Installation script
+├── 📋 persistent_exclude_apps.txt    # Permanent exclusion list
+├── 📁 logs/                          # Log file directory
+│   └── 📄 winget_update_*.log         # Timestamped execution logs
+└── 📖 README.md                      # This documentation
+```
+
+### ⚙️ Smart Application Categories
+
+<div align="center">
+
+| Category | Priority | Examples |
+|:---:|:---:|:---|
+| **Development** | 🔴 High | Visual Studio, Git, Docker |
+| **Security** | 🔴 High | Antivirus, VPN, Firewall |
+| **Browser** | 🟡 Medium | Chrome, Firefox, Edge |
+| **Productivity** | 🟡 Medium | Office, Teams, Notion |
+| **Media** | 🟢 Low | VLC, Spotify, OBS |
+| **Gaming** | 🟢 Low | Steam, Discord, Epic |
+
+</div>
+
+
+
+## 🚀 Advanced Features
+
+### Intelligent Detection
+
+<table>
+<tr>
+<td width="50%">
+
+**🔍 Smart Name Matching**
+```powershell
+# Input: "Visual Studio Code"
+# Output: Microsoft.VisualStudioCode
+```
+
+**🎯 Fuzzy Search**
+```powershell
+# Input: "Chrome"
+# Output: Multiple matches with selection
+```
+
+</td>
+<td width="50%">
+
+**📊 Automatic Categorization**
+- High Priority: Dev tools, security
+- Medium Priority: Browsers, productivity
+- Low Priority: Entertainment, gaming
+
+**⚡ Performance Optimization**
+- Concurrent update processing
+- Intelligent retry mechanisms
+- Resource usage monitoring
+
+</td>
+</tr>
+</table>
+
+### 🤖 Automation Integration
+
+<details>
+<summary><b>Windows Task Scheduler</b></summary>
+
+```powershell
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Command winget-update -Mode silent"
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At "2:00 AM"
+Register-ScheduledTask -TaskName "WingetUpdateManager" -Action $action -Trigger $trigger -RunLevel Highest
+```
+
+</details>
+
+<details>
+<summary><b>PowerShell Profile</b></summary>
+
+```powershell
+# Add to $PROFILE for custom aliases
+function Update-Apps { winget-update -Mode silent }
+function Preview-Updates { winget-update -Mode dry-run }
+function Update-Verbose { winget-update -Mode verbose }
+```
+
+</details>
+
+
+## 🛠️ Troubleshooting
+
+<div align="center">
+
+### Common Issues Quick Fix
+
+</div>
+
+<details>
+<summary><b>❌ winget Command Not Found</b></summary>
+
+**Symptoms:** `'winget' is not recognized as an internal or external command`
+
+**Solutions:**
+```powershell
+# Method 1: Install from Microsoft Store
+# Search for "App Installer" and install
+
+# Method 2: Manual installation
+Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+
+# Method 3: Download from GitHub
+# Visit: https://github.com/microsoft/winget-cli/releases
+```
+
+</details>
+
+<details>
+<summary><b>🔒 Script Execution Policy Errors</b></summary>
+
+**Symptoms:** `Execution of scripts is disabled on this system`
+
+**Solutions:**
+```powershell
+# Recommended: Set policy for current user
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Alternative: Bypass for single execution
+powershell.exe -ExecutionPolicy Bypass -File ".\winget-update.ps1"
+```
+
+</details>
+
+<details>
+<summary><b>🛡️ Access Denied During Updates</b></summary>
+
+**Symptoms:** Permission errors, "Access is denied" messages
+
+**Solutions:**
+```powershell
+# Check admin status
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+Write-Host "Running as Admin: $isAdmin"
+
+# Run as Administrator
+Start-Process powershell -Verb RunAs -ArgumentList "-File `"$PWD\winget-update.ps1`""
+```
+
+</details>
+
+<details>
+<summary><b>🔍 Smart Detection Issues</b></summary>
+
+**Symptoms:** Applications not found, "No matches found" errors
+
+**Solutions:**
+```powershell
+# List all installed applications
+winget list | Out-GridView
+
+# Search with partial name
+winget search "Visual Studio"
+
+# Use exact ID
+winget-update -AddPersistentExcludeApps "Microsoft.VisualStudioCode"
+```
+
+</details>
+
+### 🔧 Advanced Debugging
+
+<details>
+<summary><b>System Information Collection</b></summary>
+
+```powershell
+$info = @{
+    "PowerShell Version" = $PSVersionTable.PSVersion
+    "Windows Version" = (Get-CimInstance Win32_OperatingSystem).Caption
+    "Winget Version" = (winget --version)
+    "Execution Policy" = (Get-ExecutionPolicy)
+    "Is Admin" = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+}
+$info | Format-Table -AutoSize
+```
+
+</details>
+
+
+
+## 🤝 Contributing
+
+<div align="center">
+
+### We Welcome Contributions!
+
+</div>
+
+<table align="center">
+<tr>
+<td align="center">🍴<br><b>Fork</b><br>Fork the repository</td>
+<td align="center">🌿<br><b>Branch</b><br>Create feature branch</td>
+<td align="center">✨<br><b>Develop</b><br>Add your changes</td>
+<td align="center">🧪<br><b>Test</b><br>Test thoroughly</td>
+<td align="center">📤<br><b>Submit</b><br>Create pull request</td>
+</tr>
+</table>
+
+### 🛠️ Development Setup
+
+```powershell
+# Clone repository
+git clone https://github.com/sterbweise/winget-update.git
+cd winget-update
+
+# Install development tools
+Install-Module -Name Pester -Force
+Install-Module -Name PSScriptAnalyzer -Force
+
+# Run code analysis
+Invoke-ScriptAnalyzer -Path ".\winget-update.ps1"
+```
+
+
+
+## 📄 License
+
+<div align="center">
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for full details.
+
+**Summary:** You are free to use, modify, distribute, and sell this software. No warranty is provided.
+
+</div>
+
+---
+
+<div align="center">
+
+## 🌟 Support the Project
+
+If you find this project helpful, please consider:
+
+[![⭐ Star](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=for-the-badge)](https://github.com/sterbweise/winget-update)
+[![🐛 Report Bug](https://img.shields.io/badge/🐛-Report%20Bug-red?style=for-the-badge)](https://github.com/sterbweise/winget-update/issues)
+[![💡 Request Feature](https://img.shields.io/badge/💡-Request%20Feature-blue?style=for-the-badge)](https://github.com/sterbweise/winget-update/issues)
+
+---
+
+**❤️ Developed by [Sterbweise](https://github.com/sterbweise)**
+
+*Making Windows package management intelligent and effortless*
+
+![GitHub Profile](https://img.shields.io/badge/GitHub-Sterbweise-181717?style=for-the-badge&logo=github)
+
+</div>

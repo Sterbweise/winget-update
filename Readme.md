@@ -195,11 +195,11 @@ winget-update -ExcludeApps "Microsoft.Edge,Discord.Discord"
 <summary><b>Permanent Exclusions</b></summary>
 
 ```powershell
-# Smart addition to permanent exclusion list
-winget-update -AddPersistentExcludeApps "Visual Studio Code,Chrome,Spotify"
+# Smart addition to permanent exclusion
+winget-update -AddPersistentExcludeApps "Chrome"
 
-# Smart removal from permanent exclusion list
-winget-update -RemovePersistentExcludeApps "Discord,Spotify"
+# Smart removal from permanent exclusion
+winget-update -RemovePersistentExcludeApps "Discord"
 ```
 - 🧠 Intelligent name matching
 - 🔍 Shows suggestions for ambiguous matches

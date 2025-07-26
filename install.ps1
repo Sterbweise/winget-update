@@ -57,8 +57,8 @@ try {
     
     # Check if function already exists
     $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-    if ($profileContent -notmatch "winget-update") {
-        # Add function to profile
+    if ($profileContent -notmatch "# Winget Update Manager - Global Function") {
+        # Add function to profile with absolute path
         $functionContent = @"
 
 # Winget Update Manager - Global Function
@@ -72,10 +72,33 @@ function winget-update {
         Write-Host "✅ Global function added to PowerShell profile" -ForegroundColor Green
     } else {
         Write-Host "ℹ️  Global function already exists in profile" -ForegroundColor Blue
+        
+        # Update existing function with correct path
+        $updatedFunction = @"
+function winget-update {
+    param([Parameter(ValueFromRemainingArguments)]`$args)
+    & "$scriptPath" @args
+}
+"@
+        $profileContent = $profileContent -replace 'function winget-update \{[\s\S]*?\n\}', $updatedFunction
+        Set-Content -Path $PROFILE -Value $profileContent
+        Write-Host "🔄 Updated existing function with correct path" -ForegroundColor Yellow
     }
     
-    # Load function in current session
-    . $PROFILE
+    # Load function in current session (with error handling)
+    try {
+        # Define function directly in current session instead of sourcing profile
+        Invoke-Expression @"
+function winget-update {
+    param([Parameter(ValueFromRemainingArguments)]`$args)
+    & "$scriptPath" @args
+}
+"@
+        Write-Host "✅ Function loaded in current session" -ForegroundColor Green
+    } catch {
+        Write-Host "⚠️  Function added to profile but couldn't load in current session" -ForegroundColor Yellow
+        Write-Host "   Please restart PowerShell or run: . `$PROFILE" -ForegroundColor Gray
+    }
     
     Write-Host ""
     Write-Host "🎉 Installation completed successfully!" -ForegroundColor Green
@@ -88,6 +111,20 @@ function winget-update {
     Write-Host "📁 Script installed in: $installPath" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "💡 You can now use 'winget-update' from anywhere!" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "🔧 If the command doesn't work immediately:" -ForegroundColor Cyan
+    Write-Host "   • Restart PowerShell, or" -ForegroundColor White
+    Write-Host "   • Run: . `$PROFILE" -ForegroundColor White
+    Write-Host ""
+    
+    # Test if function works in current session
+    try {
+        if (Get-Command winget-update -ErrorAction SilentlyContinue) {
+            Write-Host "✅ Function is ready to use in current session!" -ForegroundColor Green
+        }
+    } catch {
+        # Ignore errors in testing
+    }
     
 } catch {
     Write-Host ""

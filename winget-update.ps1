@@ -863,15 +863,17 @@ function Get-WingetUpdates {
         $startProcessing = $false
         
         foreach ($line in $lines) {
-            # Skip warning and information lines
-            if ($line -match "following packages have|explicit targeting|The following packages") {
-
+            # Skip warning and information lines (but allow explicit targeting packages)
+            if ($line -match "following packages have.*but require explicit targeting") {
+                # This is just a header line, continue to process the packages below
                 continue
             }
 
-            # Find the header line
+            # Find the header line (can appear multiple times for different sections)
+            # Handle both normal and explicit targeting section headers
             if ($line -match "Name\s+Id\s+Version\s+Available\s+Source") {
                 $headerFound = $true
+                $startProcessing = $false  # Reset processing for new section
                 continue
             }
 
@@ -889,6 +891,41 @@ function Get-WingetUpdates {
                 # Use improved regex to parse winget output with better column detection
                 # Split by multiple spaces to handle winget's column alignment
                 $parts = @($cleanLine -split '\s{2,}' | Where-Object { $_.Trim() -ne "" })
+                
+                # If not enough parts, try alternative parsing strategies
+                if ($parts.Count -lt 4) {
+                    try {
+                        # Strategy 1: Split by single space and reconstruct
+                        $spaceParts = @($cleanLine -split '\s+' | Where-Object { $_.Trim() -ne "" })
+                        
+                        if ($spaceParts.Count -ge 5) {
+                            # For lines like "Discord Discord.Discord 1.0.9181 1.0.9200 winget"
+                            # or "WireSock VPN Client x64 NTKERNEL.WireSockVPNClient 1.2.37.1 2.4.16 winget"
+                            
+                            # Find the ID (contains dots) to split name from ID
+                            $idIndex = -1
+                            for ($i = 0; $i -lt $spaceParts.Count; $i++) {
+                                if ($spaceParts[$i] -match '^[A-Za-z][A-Za-z0-9]*\.[A-Za-z0-9]') {
+                                    $idIndex = $i
+                                    break
+                                }
+                            }
+                            
+                            if ($idIndex -gt 0 -and ($spaceParts.Count - $idIndex) -ge 4) {
+                                # Reconstruct name from parts before ID
+                                $appName = ($spaceParts[0..($idIndex-1)] -join ' ')
+                                $appId = $spaceParts[$idIndex]
+                                $currentVer = $spaceParts[$idIndex + 1]
+                                $availableVer = $spaceParts[$idIndex + 2]
+                                $source = $spaceParts[$idIndex + 3]
+                                
+                                $parts = @($appName, $appId, $currentVer, $availableVer, $source)
+                            }
+                        }
+                    } catch {
+                        # Keep original parts if parsing fails
+                    }
+                }
                 
                 $name = $null
                 $id = $null

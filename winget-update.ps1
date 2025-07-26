@@ -547,6 +547,12 @@ function Find-ApplicationSuggestions {
     
     $suggestions = @()
     
+    # Ensure InstalledApps is an array
+    if (-not $InstalledApps) {
+        return @()
+    }
+    $InstalledApps = @($InstalledApps)
+    
     # Exact name match
     $exactNameMatch = $InstalledApps | Where-Object { $_.Name -eq $SearchTerm }
     if ($exactNameMatch) {
@@ -560,11 +566,11 @@ function Find-ApplicationSuggestions {
     }
     
     # Partial name matches (case insensitive)
-    $nameMatches = $InstalledApps | Where-Object { $_.Name -like "*$SearchTerm*" }
+    $nameMatches = @($InstalledApps | Where-Object { $_.Name -like "*$SearchTerm*" })
     $suggestions += $nameMatches
     
     # Partial ID matches (case insensitive)
-    $idMatches = $InstalledApps | Where-Object { $_.Id -like "*$SearchTerm*" }
+    $idMatches = @($InstalledApps | Where-Object { $_.Id -like "*$SearchTerm*" })
     $suggestions += $idMatches
     
     # Remove duplicates
@@ -597,7 +603,13 @@ function Add-PersistentExcludeApps {
     }
     
     Write-Host "🔍 Analyzing installed applications..." -ForegroundColor Cyan
-    $installedApps = Get-InstalledApplications
+    $installedApps = @(Get-InstalledApplications)
+    
+    if (-not $installedApps -or $installedApps.Count -eq 0) {
+        Write-Host "⚠️  Warning: Could not retrieve installed applications list." -ForegroundColor Yellow
+        Write-Host "   💡 Make sure winget is working properly: winget list" -ForegroundColor DarkGray
+        return
+    }
     
     $currentList = @(Get-PersistentExcludeList)
     $validAppsToAdd = @()
@@ -609,15 +621,15 @@ function Add-PersistentExcludeApps {
         }
         
         # Find suggestions for this app
-        $suggestions = Find-ApplicationSuggestions -SearchTerm $app -InstalledApps $installedApps
+        $suggestions = @(Find-ApplicationSuggestions -SearchTerm $app -InstalledApps $installedApps)
         
-        if ($suggestions.Count -eq 0) {
+        if (-not $suggestions -or $suggestions.Count -eq 0) {
             Write-Host "❌ No installed application found matching '$app'." -ForegroundColor Red
             Write-Host "   💡 Make sure the application is installed and try using the exact name or ID." -ForegroundColor DarkGray
             continue
         }
         
-        if ($suggestions.Count -eq 1) {
+        if ($suggestions -and $suggestions.Count -eq 1) {
             # Exact match found - use the ID
             $selectedApp = $suggestions[0]
             $appToAdd = $selectedApp.Id

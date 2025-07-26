@@ -63,7 +63,6 @@ try {
 
 # Winget Update Manager - Global Function
 function winget-update {
-    param([Parameter(ValueFromRemainingArguments)]`$args)
     & "$scriptPath" @args
 }
 "@
@@ -90,7 +89,6 @@ function winget-update {
         # Define function directly in current session instead of sourcing profile
         Invoke-Expression @"
 function winget-update {
-    param([Parameter(ValueFromRemainingArguments)]`$args)
     & "$scriptPath" @args
 }
 "@

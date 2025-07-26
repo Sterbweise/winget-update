@@ -7,7 +7,6 @@
 ![Version](https://img.shields.io/badge/Version-3.0.0-FF6B6B?style=flat-square&logoColor=white&labelColor=34495E)
 ![GitHub Stars](https://img.shields.io/github/stars/sterbweise/winget-update?style=flat-square&logo=github&color=FFD700&labelColor=2C3E50)
 ![GitHub Issues](https://img.shields.io/github/issues/sterbweise/winget-update?style=flat-square&logo=github&color=FF4757&labelColor=34495E)
-![Last Commit](https://img.shields.io/github/last-commit/sterbweise/winget-update?style=flat-square&logo=git&color=2ED573&labelColor=34495E)
 ![Repo Size](https://img.shields.io/github/repo-size/sterbweise/winget-update?style=flat-square&logo=database&color=FFA726&labelColor=2C3E50)
 
 </div>

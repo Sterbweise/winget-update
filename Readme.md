@@ -40,6 +40,10 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
 *After installation, use `winget-update` from anywhere in PowerShell*
 
 
+<<<<<<< HEAD
+=======
+<img src="https://github.com/user-attachments/assets/5863fdf3-6cd8-47d8-b346-4a574fc45c61" alt="image" width="600"/>
+>>>>>>> 6d720eba713b73cd8438e17312523732c3b83334
 
 ## Table of Contents
 

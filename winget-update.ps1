@@ -859,8 +859,7 @@ function Escape-SpecialCharacters {
 # Function to get the list of available updates from winget
 function Get-WingetUpdates {
     Write-Host "🔍 Scanning for available updates..." -ForegroundColor Cyan
-    Write-Host "DEBUG: Get-WingetUpdates called" -ForegroundColor Magenta
-    
+        
     try {
         # Execute winget with enhanced error handling
         $wingetOutput = & winget upgrade --include-unknown 2>&1

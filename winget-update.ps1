@@ -11,7 +11,7 @@
     File Name      : winget-update.ps1
     Author         : sterbweise
     Prerequisite   : PowerShell 5.1 or later, Windows Package Manager (winget)
-    Version        : v3.0.0
+    Version        : v3.1.0
     Date           : 2025-07-26
 
      _    _ _                  _     _   _           _       _       
@@ -190,7 +190,7 @@ function Show-Help {
     Write-Host "╔$doubleSeparator╗" -ForegroundColor Magenta
     
     # First line with title
-    $title1 = "WINGET UPDATE MANAGER v3.0.0"
+    $title1 = "WINGET UPDATE MANAGER v3.1.0"
     $padding1 = $width - $title1.Length
     $leftPad1 = [Math]::Max(0, [Math]::Floor($padding1 / 2))
     $rightPad1 = [Math]::Max(0, $padding1 - $leftPad1)
@@ -422,11 +422,11 @@ function Show-Help {
     Write-Host "║" -ForegroundColor DarkGray
     
     # Version line
-    $versionText = "    Version: v3.0.0"
+    $versionText = "    Version: v3.1.0"
     $versionPadding = [Math]::Max(0, $width - $versionText.Length)
     Write-Host "║" -NoNewline -ForegroundColor DarkGray
     Write-Host "    Version: " -NoNewline -ForegroundColor DarkGray
-    Write-Host "v3.0.0" -NoNewline -ForegroundColor Green
+    Write-Host "v3.1.0" -NoNewline -ForegroundColor Green
     for ($i = 0; $i -lt $versionPadding; $i++) { Write-Host " " -NoNewline }
     Write-Host "║" -ForegroundColor DarkGray
     
@@ -859,6 +859,7 @@ function Escape-SpecialCharacters {
 # Function to get the list of available updates from winget
 function Get-WingetUpdates {
     Write-Host "🔍 Scanning for available updates..." -ForegroundColor Cyan
+    Write-Host "DEBUG: Get-WingetUpdates called" -ForegroundColor Magenta
     
     try {
         # Execute winget with enhanced error handling
@@ -875,164 +876,29 @@ function Get-WingetUpdates {
         $startProcessing = $false
         
         foreach ($line in $lines) {
-            # Skip warning and information lines (but allow explicit targeting packages)
-            if ($line -match "following packages have.*but require explicit targeting") {
-                # This is just a header line, continue to process the packages below
+            if ($line -match "following packages have|explicit targeting") {
                 continue
             }
-
-            # Find the header line (can appear multiple times for different sections)
-            # Handle both normal and explicit targeting section headers
             if ($line -match "Name\s+Id\s+Version\s+Available\s+Source") {
                 $headerFound = $true
-                $startProcessing = $false  # Reset processing for new section
                 continue
             }
-
-            # Wait for separator line after header
+            # Wait for a line after the header before starting
             if ($headerFound -and $line -match "^-+") {
                 $startProcessing = $true
                 continue
             }
-
-            # Process update entries
             if ($startProcessing -and $line.Trim() -ne "" -and $line -match "[a-zA-Z0-9]") {
-                # Clean the line but preserve version information with <
-                $cleanLine = $line.Trim()
-                
-                # Use improved regex to parse winget output with better column detection
-                # Split by multiple spaces to handle winget's column alignment
-                $parts = @($cleanLine -split '\s{2,}' | Where-Object { $_.Trim() -ne "" })
-                
-                # If not enough parts, try alternative parsing strategies
-                if ($parts.Count -lt 4) {
-                    try {
-                        # Strategy 1: Split by single space and reconstruct
-                        $spaceParts = @($cleanLine -split '\s+' | Where-Object { $_.Trim() -ne "" })
-                        
-                        if ($spaceParts.Count -ge 5) {
-                            # For lines like "Discord Discord.Discord 1.0.9181 1.0.9200 winget"
-                            # or "WireSock VPN Client x64 NTKERNEL.WireSockVPNClient 1.2.37.1 2.4.16 winget"
-                            
-                            # Find the ID (contains dots) to split name from ID
-                            $idIndex = -1
-                            for ($i = 0; $i -lt $spaceParts.Count; $i++) {
-                                if ($spaceParts[$i] -match '^[A-Za-z][A-Za-z0-9]*\.[A-Za-z0-9]') {
-                                    $idIndex = $i
-                                    break
-                                }
-                            }
-                            
-                            if ($idIndex -gt 0 -and ($spaceParts.Count - $idIndex) -ge 4) {
-                                # Reconstruct name from parts before ID
-                                $appName = ($spaceParts[0..($idIndex-1)] -join ' ')
-                                $appId = $spaceParts[$idIndex]
-                                $currentVer = $spaceParts[$idIndex + 1]
-                                $availableVer = $spaceParts[$idIndex + 2]
-                                $source = $spaceParts[$idIndex + 3]
-                                
-                                $parts = @($appName, $appId, $currentVer, $availableVer, $source)
-                            }
-                        }
-                    } catch {
-                        # Keep original parts if parsing fails
-                    }
-                }
-                
-                $name = $null
-                $id = $null
-                $version = $null
-                $available = $null
-                $source = "winget"
-                
-                # Winget output format: Name | Id | Version | Available | Source
-                if ($parts.Count -ge 3) {
-                    # Handle case where name and ID are in the same part
-                    if ($parts.Count -eq 3 -and $parts[0] -match '^(.+?)\s+([A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9][A-Za-z0-9]*)*[…]?)\s+<?\s*([^\s]+)$') {
-                        # Format: "Name ID < Version" | "Available" | "Source"
-                        $name = $matches[1].Trim()
-                        $id = $matches[2].Trim()
-                        $version = $matches[3].Trim()
-                        $available = $parts[1].Trim()
-                        $source = $parts[2].Trim()
-                    } else {
-                        # Standard parsing
-                        $name = $parts[0].Trim()
-                        $id = $parts[1].Trim()
-                    }
+                # Use precise regex to capture columns
+                if ($line -match "^([^│]+?)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)$") {
+                    $name = $matches[1].Trim()
+                    $id = $matches[2].Trim()
+                    $version = $matches[3].Trim()
+                    $available = $matches[4].Trim()
+                    $source = $matches[5].Trim()
                     
-                    # Handle different parsing scenarios based on parts count
-                    if ($parts.Count -eq 3 -and !$version) {
-                        # Format: Name | Id | "Version Available Source"
-                        $lastPart = $parts[2].Trim()
-                        
-                        # Try to extract version, available, and source from the last part
-                        if ($lastPart -match '^<\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)$') {
-                            # Format: "< version available source"
-                            $version = $matches[1].Trim()
-                            $available = $matches[2].Trim()
-                            $source = $matches[3].Trim()
-                        } elseif ($lastPart -match '^([^\s]+)\s+([^\s]+)\s+([^\s]+)$') {
-                            # Format: "version available source"
-                            $version = $matches[1].Trim()
-                            $available = $matches[2].Trim()
-                            $source = $matches[3].Trim()
-                        } else {
-                            # Fallback: try to split by spaces
-                            $subParts = @($lastPart -split '\s+' | Where-Object { $_.Trim() -ne "" })
-                            if ($subParts.Count -ge 3) {
-                                $version = $subParts[0] -replace '^<\s*', ''
-                                $available = $subParts[1]
-                                $source = $subParts[2]
-                            }
-                        }
-                    } elseif ($parts.Count -ge 4) {
-                        # Standard format with separate columns
-                        $versionPart = $parts[2].Trim()
-                        if ($versionPart -match '^<\s*([^\s]+)\s+([^\s]+)$') {
-                            # Format: "< version available"
-                            $version = $matches[1].Trim()
-                            $available = $matches[2].Trim()
-                            $source = if ($parts.Count -ge 4) { $parts[3].Trim() } else { "winget" }
-                        } else {
-                            # Standard format: separate columns
-                            $version = $versionPart -replace '^<\s*', '' # Remove < prefix if present
-                            $available = $parts[3].Trim()
-                            $source = if ($parts.Count -ge 5) { $parts[4].Trim() } else { "winget" }
-                        }
-                    }
-                    
-                    # Additional validation for ID format - handle truncated IDs with …
-                    if ($id -notmatch '^[A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9][A-Za-z0-9]*)*[…]?$') {
-                        # Try alternative parsing if ID doesn't match expected format
-                        # Sometimes winget output can have irregular spacing
-                        if ($cleanLine -match '^(.+?)\s+([A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9][A-Za-z0-9]*)*)\s+<?([^\s]+)\s+([^\s]+)(?:\s+([^\s]+))?$') {
-                            $name = $matches[1].Trim()
-                            $id = $matches[2].Trim()
-                            $version = $matches[3].Trim()
-                            $available = $matches[4].Trim()
-                            $source = if ($matches[5]) { $matches[5].Trim() } else { "winget" }
-                        } else {
-                            # Clear variables if parsing failed
-                            $name = $null
-                            $id = $null
-                            $version = $null
-                            $available = $null
-                        }
-                    }
-                }
-                
-                # Only process if we successfully parsed the line
-                if ($name -and $id -and $version -and $available) {
-
-                    
-                    # Validate entry - be more permissive with names but strict with IDs (allow truncated IDs)
-                    if ($id -ne "Id" -and $version -ne "Version" -and $name -ne "Name" -and
-                        -not ($name -match "following packages|explicit targeting|upgrade available|^-+$") -and
-                        $id -match '^[A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9][A-Za-z0-9]*)*[…]?$' -and
-                        $version -notmatch '^(Version|Available)$' -and
-                        $available -notmatch '^(Version|Available)$') {
-                        
+                    # Verify it's a valid line
+                    if ($id -ne "Id" -and $version -ne "Version" -and -not ($name -match "following packages|explicit targeting")) {
                         $updateInfo = [PSCustomObject]@{
                             Name = $name
                             Id = $id
@@ -1052,6 +918,11 @@ function Get-WingetUpdates {
 
         # Ensure $updates is always an array and remove duplicates
         $updates = @($updates)
+        Write-Host "DEBUG: Raw updates count: $($updates.Count)" -ForegroundColor Magenta
+        $updates | Where-Object { $_.Name -match "v2ray|2dust" -or $_.Id -match "v2ray|2dust" } | ForEach-Object {
+            Write-Host "DEBUG: Found v2rayN: $($_.Name) ($($_.Id))" -ForegroundColor Magenta
+        }
+        
         $uniqueUpdates = @($updates | Sort-Object Id -Unique | Sort-Object Priority, Name)
         
         Write-Host "✅ Found $($uniqueUpdates.Count) available updates" -ForegroundColor Green
@@ -1224,7 +1095,7 @@ function Show-UpdateSummary {
     
     # Enhanced header with system info
     $systemInfo = Get-SystemInfo
-    $currentVersion = "v3.0.0"
+    $currentVersion = "v3.1.0"
     
     # Check for script updates
     try {
@@ -2700,7 +2571,7 @@ Write-Host (" " * ($bannerWidth - 2)) -NoNewline
 Write-Host $sideChar -ForegroundColor DarkGray
 
 # Title line: ║ + spaces + title + spaces + ║
-$title = "WINGET UPDATE MANAGER v3.0.0"
+$title = "WINGET UPDATE MANAGER v3.1.0"
 $titlePadding = $bannerWidth - $title.Length - 2
 $leftPadding = [Math]::Floor($titlePadding / 2)
 $rightPadding = $titlePadding - $leftPadding

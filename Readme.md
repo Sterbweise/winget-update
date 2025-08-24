@@ -4,7 +4,7 @@
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square&logo=powershell&logoColor=white&labelColor=2C3E50)
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D4?style=flat-square&logo=windows&logoColor=white&labelColor=34495E)
 ![License](https://img.shields.io/badge/License-MIT-50C878?style=flat-square&logo=opensourceinitiative&logoColor=white&labelColor=2C3E50)
-![Version](https://img.shields.io/badge/Version-3.0.0-FF6B6B?style=flat-square&logoColor=white&labelColor=34495E)
+![Version](https://img.shields.io/badge/Version-3.1.0-FF6B6B?style=flat-square&logoColor=white&labelColor=34495E)
 ![GitHub Stars](https://img.shields.io/github/stars/sterbweise/winget-update?style=flat-square&logo=github&color=FFD700&labelColor=2C3E50)
 ![GitHub Issues](https://img.shields.io/github/issues/sterbweise/winget-update?style=flat-square&logo=github&color=FF4757&labelColor=34495E)
 ![Repo Size](https://img.shields.io/github/repo-size/sterbweise/winget-update?style=flat-square&logo=database&color=FFA726&labelColor=2C3E50)
